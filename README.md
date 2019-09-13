@@ -8,4 +8,11 @@ Weather is a major source of risk and uncertainty for some businesses, hence the
 
 ## Architecture/Pipeline
 
+
+## Front-end features
+- Metric definitions: e.g., fare, duration, fare/mile, duration/mile
+- Bar chart: metric for dry vs wet
+- Historical curve
+- Projections
+
 ## Potential add-ins
