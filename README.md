@@ -7,7 +7,7 @@ Weather is a major source of risk and uncertainty for some businesses, hence the
 ## A unifying schema for distinct datasets
 
 ## Architecture/Pipeline
-
+![Tech Stack](image.png)
 
 ## Front-end features
 - Metric definitions: e.g., fare, duration, fare/mile, duration/mile
