@@ -1,4 +1,5 @@
 # This module specifies conversion format between string, time obj and time stamp
+# Needed for Python 2. In Python 3, the datetime library has them
 # Author: Colin Chow
 # Date created: 09/20/2019
 # Version:

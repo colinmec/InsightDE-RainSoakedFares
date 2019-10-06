@@ -1,5 +1,8 @@
-# This module appends weather data to taxi data
-# Returns 3 columns: air temperature, cloud coverage and precipitation
+# Modules here are meant for two purposes:
+# 1. Gives relevant weather station according to given location,
+#    by coordinates (prior to 2017) or location ID (since 2017)
+# 2. Returns weather information to be included in taxi trip
+#    Returns 3 columns: air temperature, cloud coverage and precipitation
 # Author: Colin Chow
 # Date created: 09/25/2019
 # Version:
@@ -8,21 +11,9 @@ import pyspark.sql.types as sqlt
 
 from operator import truediv
 
-hrInSec = 3600 # 1 hour = 3600 seconds
-
-# Join based on closest time - not efficient
-#def appendWeatherData(ts, stID, tsVec, airTemp, cloudCov, precip1Hr):
-#    if not ts == None:
-#        deltaTime = [abs(val - ts) for val in tsVec[stID]]
-#        ind       = deltaTime.index(min(deltaTime))
-    
-#        return sqlt.Row('airTemp'    , 'cloudCov'    , 'pricip1Hr')\
-#                       ( airTemp[stID][ind],  cloudCov[stID][ind],  precip1Hr[stID][ind])
-#    else:
-#        return sqlt.Row('airTemp', 'cloudCov', 'pricip1Hr')\
-#                        (None    ,  None     ,  None)
-
 def appendWeatherData(ts, stID, tsVec, airTemp, cloudCov, precip1Hr):
+    # Returns weather information to be included in taxi trip
+    hrInSec = 3600 # 1 hour = 3600 seconds
     if not ts == None:
         deltaTime = ts - tsVec[stID][0]
         ind       = int(round(truediv(deltaTime,hrInSec)))
@@ -38,11 +29,7 @@ def appendWeatherData(ts, stID, tsVec, airTemp, cloudCov, precip1Hr):
                         (None    ,  None     ,  None)
 
     # end of appendWeatherData
-
-def getStationWithID(locID):
-    # See hash map below
-    return locIDToStation.get(locID)
-
+    
 def getStationWithCoord(lng, lat):
     # Arbitrarily defined:
     # West of -74.042 goes to Newark
@@ -58,7 +45,9 @@ def getStationWithCoord(lng, lat):
     else:
         return 0
 
-locIDToStation = { \
+def getStationWithID(locID):
+    # Based on map provided by NYC TLC
+    locIDToStation = { \
       '1' : 3,   '2' : 2,   '3' : 0,   '4' : 0,   '5' : 3,   '6' : 3,   '7' : 1,   '8' : 1,   '9' : 1,  '10' : 2,
      '11' : 2,  '12' : 0,  '13' : 0,  '14' : 2,  '15' : 1,  '16' : 1,  '17' : 2,  '18' : 0,  '19' : 1,  '20' : 0,
      '21' : 2,  '22' : 2,  '23' : 3,  '24' : 0,  '25' : 2,  '26' : 2,  '27' : 2,  '28' : 1,  '29' : 2,  '30' : 2,
@@ -86,3 +75,16 @@ locIDToStation = { \
     '241' : 0, '242' : 0, '243' : 0, '244' : 0, '245' : 0, '246' : 3, '247' : 0, '248' : 0, '249' : 0, '250' : 0,
     '251' : 3, '252' : 1, '253' : 1, '254' : 0, '255' : 2, '256' : 2, '257' : 2, '258' : 2, '259' : 0, '260' : 1,
     '261' : 0, '262' : 0, '263' : 0, '264' : 0, '265' : 0}
+    return locIDToStation.get(locID)
+
+# Join based on closest time - not efficient
+#def appendWeatherData(ts, stID, tsVec, airTemp, cloudCov, precip1Hr):
+#    if not ts == None:
+#        deltaTime = [abs(val - ts) for val in tsVec[stID]]
+#        ind       = deltaTime.index(min(deltaTime))
+#    
+#        return sqlt.Row('airTemp'    , 'cloudCov'    , 'pricip1Hr')\
+#                       ( airTemp[stID][ind],  cloudCov[stID][ind],  precip1Hr[stID][ind])
+#    else:
+#        return sqlt.Row('airTemp', 'cloudCov', 'pricip1Hr')\
+#                        (None    ,  None     ,  None)

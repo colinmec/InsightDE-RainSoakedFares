@@ -3,7 +3,6 @@
 # Date created: 09/20/2019
 # Version:
 
-
 import datetimeTools as dtt         # Custom, see datetimeTools.py
 
 from datetime import datetime
@@ -25,9 +24,9 @@ from globalVar import getVal as glb # Custom, see globalVar.py
               scaled up by 10 (-1 means trace, -9999 means missing value)
 """
 
-weatherFields = glb('weatherFields')
-  
 def parseIsdLine(line):
+
+    weatherFields = glb('weatherFields')
     
     # Initialize all to none
     readings={key: None for key in weatherFields}  

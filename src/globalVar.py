@@ -1,4 +1,5 @@
 # Here I store all the variables I might need in multiple scripts
+# Also, this makes it convenient to switch between testing and actual processing
 # Author: Colin Chow
 # Date created: 09/20/2019
 # Version:

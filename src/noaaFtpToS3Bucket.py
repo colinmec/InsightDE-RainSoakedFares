@@ -16,16 +16,6 @@ from shutil    import copyfile
 from datetime  import datetime
 from globalVar import getVal as glb # see globalVar.py
 
-# These variables are sourced from globalVar.py
-weatherFields = glb('weatherFields')
-noaaFtpDomain = glb('noaaFtpDomain')
-noaaFtpPath   = glb('noaaFtpPath')
-noaaStations  = glb('noaaStations')
-noaaLogin     = glb('noaaLogin')
-noaaPassword  = glb('noaaPassword')
-nOfYears      = glb('nOfPassYears')
-weatherBucket = glb('s3WeatherBucket')
-
 def downloadFromFtp(domain,folder,login,password,filenames):
     ftp = ftplib.FTP(domain)   # Create ftp session
     ftp.login(login, password) # Login as 'anonymous'
@@ -44,7 +34,7 @@ def noaaGzipToCsv(filename):
 
     outFName = filename.replace('.gz', '.csv')
     with open(outFName, 'w') as outFile:
-        writer = csv.DictWriter(outFile, fieldnames=weatherFields)
+        writer = csv.DictWriter(outFile, fieldnames=glb('weatherFields'))
         writer.writeheader()
         for row in readings:
             writer.writerow(row)
@@ -90,7 +80,7 @@ def splitIntoMonth(csvFiles, years):
                 monthRec = curYearRec[indices[0]:indices[-1]]
                 outFName = csvFile.replace('.csv', '-' + month + '.csv')
                 with open(outFName, 'w') as outFile:
-                    writer = csv.DictWriter(outFile, fieldnames=weatherFields)
+                    writer = csv.DictWriter(outFile, fieldnames=glb('weatherFields'))
                     writer.writeheader()
                     for row in monthRec:
                         writer.writerow(row)
@@ -109,6 +99,7 @@ def cleanupLocal(filenames):
 
 def fixBadNoaaData():
     print("Central-Park 2012 APR-AUG messed up, use La-Guardia data.")
+    weatherBucket = glb('s3WeatherBucket')
     ovr = True # Overwrite
     S3Tools.copy_among_buckets(weatherBucket, 'La-Guardia/725030-14732-2012-04.csv', \
                                weatherBucket, 'Central-Park/725053-94728-2012-04.csv', ovr)
@@ -122,6 +113,15 @@ def fixBadNoaaData():
                                weatherBucket, 'Central-Park/725053-94728-2012-08.csv', ovr)
         
 def main():
+    # These variables are sourced from globalVar.py
+    noaaFtpDomain = glb('noaaFtpDomain')
+    noaaFtpPath   = glb('noaaFtpPath')
+    noaaStations  = glb('noaaStations')
+    noaaLogin     = glb('noaaLogin')
+    noaaPassword  = glb('noaaPassword')
+    nOfYears      = glb('nOfPassYears')
+    weatherBucket = glb('s3WeatherBucket')
+    
     # Backup weather data
     print('Moving current data to back-up bucket.')
     backupBucket = weatherBucket + '-bak'
@@ -152,4 +152,5 @@ def main():
     fixBadNoaaData()
     # End of main()
             
-main()
+if __name__ == "__main__":
+    main()

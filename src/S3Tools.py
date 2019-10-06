@@ -1,5 +1,5 @@
 # Source: https://github.com/aws-samples/aws-open-data-analytics-notebooks
-# Colin added last two methods
+# Colin modified some and added last two methods
 
 import boto3
 import botocore
