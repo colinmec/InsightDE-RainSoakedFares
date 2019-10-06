@@ -59,7 +59,7 @@ def list_bucket_contents(bucket, match='', size_mb=0):
 
     print('Bucket \'%s\' total size is %3.1f GB with %d files' %(bucket, total_size_gb/1024, total_files))
 
-def preview_csv_dataset(bucket, key, rows=10):
+def preview_csv_dataset(bucket, key, rows=10, skip=None):
     data_source = {
             'Bucket': bucket,
             'Key': key
@@ -70,7 +70,7 @@ def preview_csv_dataset(bucket, key, rows=10):
         Params = data_source
     )
 
-    data = pd.read_csv(url, nrows=rows)
+    data = pd.read_csv(url, nrows=rows, skiprows=skip, error_bad_lines=False, low_memory=False)
     return data
 
 def key_exists(bucket, key):
@@ -87,8 +87,8 @@ def key_exists(bucket, key):
         # The key does exist.
         return(True)
 
-def copy_among_buckets(from_bucket, from_key, to_bucket, to_key):
-    if not key_exists(to_bucket, to_key):
+def copy_among_buckets(from_bucket, from_key, to_bucket, to_key, ovr):
+    if ovr or not key_exists(to_bucket, to_key):
         s3_resource.meta.client.copy({'Bucket': from_bucket, 'Key': from_key}, 
                                         to_bucket, to_key)        
         print('File %s saved to S3 bucket %s' %(to_key, to_bucket))

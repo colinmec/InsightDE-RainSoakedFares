@@ -20,8 +20,11 @@ def getTimeStamp(time):
 
 # String to time stamp (just a union of the two methods above)
 def strToTimeStamp(timeStr):
-    timeDelta = getTimeType(timeStr) - refDate
-    return timeDelta.days*hrInSec*dayInHr + timeDelta.seconds
+    if timeStr is not None:
+        timeDelta = getTimeType(timeStr) - refDate
+        return timeDelta.days*hrInSec*dayInHr + timeDelta.seconds
+    else:
+        return None
 
 # Same as above, but receives and returns an array
 def strArrayToTimeStamps(strArray):

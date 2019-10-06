@@ -7,6 +7,7 @@ import os
 
 from globalVar import getVal as glb # Custom, see globalVar.py
 from pyspark.sql import DataFrameWriter
+from pyspark.sql import DataFrameReader
 
 class PostgresConnector(object):
     def __init__(self):
@@ -26,3 +27,10 @@ class PostgresConnector(object):
     def write(self, df, table, mode):
         my_writer = self.get_writer(df)
         my_writer.jdbc(self.url_connect, table, mode, self.properties)
+        
+    def get_reader(self, spark):
+        return DataFrameReader(spark)
+    
+    def read(self, spark, table):
+        my_reader = self.get_reader(spark)
+        return my_reader.jdbc(self.url_connect, table, self.properties)

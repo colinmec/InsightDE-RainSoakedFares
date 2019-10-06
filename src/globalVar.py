@@ -3,32 +3,39 @@
 # Date created: 09/20/2019
 # Version:
 
+import os
+
+# Data volume:
+nOfPassYears = 11
+
 # PostgreSQL variables
-dbName   = 'postgres'    # Name of postgres database (default: postgres)
-pgHost   = 'ip-10-0-0-5' # Host of postgres database
-pgUser   = 'colinmec'    # My postgres username
-pgPasswd = 'password'    # My postgres password
+pgHost      = os.environ['PGHOST']     # Host of postgres database
+pgUser      = os.environ['PGUSER']     # My postgres username
+pgPasswd    = os.environ['PGPASSWORD'] # My postgres password
+dbName      = 'taxi_and_weather_5pc'   # Name of postgres database (default: postgres)
+pgWriteMode = 'append'
+pgKeepCols1 = ['VendorID'   , 'pUTimeStamp', 'pULocId',    \
+               'dOTimeStamp', 'distance'   , 'dOLocId',    \
+               'nPax'       , 'fare'       , 'tip',        \
+               'totalPaid'  , 'pUAirTemp'  , 'pUCloudCov', \
+               'pUPrecip1Hr', 'station']
+pgKeepCols2 = ['VendorID'   , 'pUTimeStamp', 'pULong',    \
+               'pULat'      , 'dOTimeStamp', 'distance',  \
+               'dOLong'     , 'dOLat'      , 'nPax',      \
+               'fare'       , 'tip'        , 'totalPaid', \
+               'pUAirTemp'  , 'pUCloudCov' , 'pUPrecip1Hr', 'station']
+
+# AWS S3 variables
+s3Prefix    = 's3a://'
+s3ReadMode  = 'PERMISSIVE'
 
 # NYC-TLC taxi data variables
-#s3TaxiBucket    = 'nyc-tlc'
 #s3TaxiBucket    = 'colinmec-test'
-s3TaxiBucket    = 'colinmec-test-nyc-tlc'
+#s3TaxiBucket    = 'nyc-tlc'
+s3TaxiBucket    = 'colinmec-nyc-tlc-5pc'
 ylwTaxiPrefix   = 'trip data/yellow_tripdata_'
-ylwTaxiFields   = ['VendorID'      , 'pUDateTime', 'dODateTime'   , \
-                   'nPax'          , 'distance'  , 'rateCode'     , \
-                   'storeNFwdFlag' , 'pULocId'   , 'dOLocId'      , \
-                   'paymentType'   , 'fare'      , 'extra'        , \
-                   'mtaTax'        , 'tip'       , 'tollsAmount'  , \
-                   'imprvSurcharge', 'totalPaid' , 'congSurcharge']
-ylwTaxiDataType = ['STRING', 'STRING', 'STRING', \
-                   'INT'   , 'FLOAT' , 'STRING', \
-                   'STRING', 'STRING', 'STRING', \
-                   'STRING', 'FLOAT' , 'FLOAT' , \
-                   'FLOAT' , 'FLOAT' , 'FLOAT' , \
-                   'FLOAT' , 'FLOAT' , 'FLOAT']
 
 # NOAA IDS data variables
-nOfPassYears    = 11
 s3WeatherBucket = 'noaa-csv-data'
 noaaFtpDomain   = 'ftp.ncdc.noaa.gov'
 noaaFtpPath     = 'pub/data/noaa/isd-lite/'
@@ -47,15 +54,18 @@ weatherDataType = ['LONG' , 'FLOAT', 'FLOAT', \
 
 def getVal(keyName):
     return {
+        'nOfPassYears'    : nOfPassYears,
         'dbName'          : dbName,
         'pgHost'          : pgHost,
         'pgUser'          : pgUser,
         'pgPasswd'        : pgPasswd,
+        'pgWriteMode'     : pgWriteMode,
+        'pgKeepCols1'     : pgKeepCols1,
+        'pgKeepCols2'     : pgKeepCols2,
+        's3Prefix'        : s3Prefix,
+        's3ReadMode'      : s3ReadMode,
         's3TaxiBucket'    : s3TaxiBucket,
         'ylwTaxiPrefix'   : ylwTaxiPrefix,
-        'ylwTaxiFields'   : ylwTaxiFields,
-        'ylwTaxiDataType' : ylwTaxiDataType,
-        'nOfPassYears'    : nOfPassYears,
         's3WeatherBucket' : s3WeatherBucket,
         'noaaFtpDomain'   : noaaFtpDomain,
         'noaaFtpPath'     : noaaFtpPath,
