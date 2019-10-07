@@ -44,7 +44,22 @@ The main work load of Spark is to clean up taxi data and incorporate weather inf
 3. Metric selection: fare  
 
 ## Codes and instructions
+Source code directory: src  
+Main:  
+`noaaFtpToS3Bucket`: Reformats and partitions weather data; stores results in S3  
+`ETLMain`: Main PySpark routine  
+`resultViewer`: Dash front-end applications  
+Others:  
+`globalVar`: Contains misc. variables and weather schema definitions  
+`parseISD`: Called by `noaaFtpToS3Bucket` to parse weather data  
+`datetimeTools`: Contains datetime modules found in Python 3 but not Python 2  
+`S3Tools`: Functions for read, write and transfer files in S3  
+`dataProcessing`: Called by `ETLMain`, contains main ETL functions  
+`getTaxiFields`: Called by `dataProcessing` to deal with inconsistent taxi schema  
+`appendWeatherData`: Called by `dataProcessing` to incorporate weather data into taxi data  
+`postgres`: Called by `dataProcessing` to write PostgreSQL database  
 
+Spark command line:  
 `spark-submit --master spark://<master DNS>:7077 --packages org.postgresql:postgresql:42.1.1 ETLMain.py`
 
 ## Potential add-ins
