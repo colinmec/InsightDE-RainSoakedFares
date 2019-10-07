@@ -6,6 +6,7 @@
 # Date created: 10/3/2019
 # Version:
 
+import os
 import psycopg2 as pg
 import pandas   as pd
 import pandas.io.sql as psql
@@ -57,8 +58,10 @@ def isRaining(val):
 def getBarChartData(year, month, station):
     # Generate report for plots
     # Load data from postgreSQL
-    conn = pg.connect(dbname="taxi_and_weather_5pc", \
-                        user="colinmec", password="password", host='ip-10-0-0-8')
+    conn = pg.connect(dbname   = "taxi_and_weather_5pc"  , \
+                      user     = os.environ['PGUSER']    , \
+                      password = os.environ['PGPASSWORD'], \
+                      host     = os.environ['PGHOST'])
     sqlStr = "SELECT * FROM yellow_" + year + "_" + month
     df     = psql.read_sql(sqlStr, conn)
 
