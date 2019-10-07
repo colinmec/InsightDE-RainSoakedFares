@@ -9,15 +9,20 @@ Transportation business data is provided by New York City Taxi and Limousine Com
 
 Historical weather reports are sourced from NOAA Integrated Surface Data FTP server. [[Link]](ftp://ftp.ncdc.noaa.gov/pub/data/noaa) In addition to raw weather station observations, NOAA maintains a much reduced version of the data, which is interpolated with respect to top-of-the-hour time. Albeit less accurate, using this interpolated dataset can reduce computation time by a large margin. This dataset contains 8 weather observations: air temperature, dew point, pressure, wind direction, wind speed, cloud coverage, precipitation with 1 hour and 6 hours accumulation time.
 
-The weather data is in fixed width format and needs to be reformatted into .csv to be compatible with the main ETL process. To improve computation speed and organization, it is partitioned by month, in the same manner as the taxi data.
+The weather data is in fixed width format and needs to be reformatted into .csv to be compatible with the main ETL process. Four weather stations around New York City are selected. To improve computation speed and organization, it is partitioned by month, in the same manner as the taxi data. Samples can be found in 'test/sampleData'.
 
 ## Architecture/Pipeline
 ![Tech Stack](https://github.com/colinmec/InsightDE-RainSoakedFares/blob/master/Tech%20Stack.png)
 
+The main work load of Spark is to clean up taxi data and incorporate weather information for each taxi trip, using data from appropriate weather station. The following fields are retained and stored in PostgreSQL: pick-up and drop-off timestamps (pUTimeStamp)
+
+## Schema, data cleanliness and other considerations
+1. The schema for taxi data changes frequently. This incurs programming and computation overhead
+
 ## Front-end features
-- Metric definitions: e.g., fare, duration, fare/mile, duration/mile
-- Bar chart: metric for dry vs wet
-- Historical curve
-- Projections
+1. Selection of charts by month
+2. Daily aggregated metric along with precipitation
+3. Metric selection: fare
 
 ## Potential add-ins
+1. Machine learning results for investigating behavioral pattern in relation to weather, such as those from clustering.
