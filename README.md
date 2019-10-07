@@ -14,10 +14,27 @@ The weather data is in fixed width format and needs to be reformatted into .csv 
 ## Architecture/Pipeline
 ![Tech Stack](https://github.com/colinmec/InsightDE-RainSoakedFares/blob/master/Tech%20Stack.png)
 
-The main work load of Spark is to clean up taxi data and incorporate weather information for each taxi trip, using data from appropriate weather station. The following fields are retained and stored in PostgreSQL: pick-up and drop-off timestamps (pUTimeStamp)
+The main work load of Spark is to clean up taxi data and incorporate weather information for each taxi trip, using data from appropriate weather station. Results are stored in PostgreSQL and the following fields are retained:
+    `VendorID`      : Vendor ID
+    `pUTimeStamp`   : Pick-up timestamp
+    `dOTimeStamp`   : Drop-off timestamp
+    `pULong`,`pULat`: Pick-up longitude and lattitude (prior to 2017)
+    `dOLong`,`dOLat`: Drop-off longitude and lattitude (prior to 2017)
+    `pULocId`       : Pick-up location ID
+    `dOLocId`       : Drop-off location ID
+    `distance`      : Distance travelled
+    `nPax`          : Number of passengers
+    `fare`          : Fare
+    `tip`           : Tip
+    `totalPaid`     : Total amount = fare + tip + MTA tax + other surcharges
+    `pUAirTemp`     : Air temperature at pick-up
+    `pUCloudCov`    : Cloud coverage at pick-up
+    `pUPrecip1Hr`   : 1-hour accumulated precipitation at pick-up
+    `station`       : Weather station (0: Manhattan, 1: LGA, 2: JFK, 3: Newark)
 
 ## Schema, data cleanliness and other considerations
-1. The schema for taxi data changes frequently. This incurs programming and computation overhead
+1. The schema for taxi data changes frequently. This incurs programming and computation overhead.
+2. 
 
 ## Front-end features
 1. Selection of charts by month
