@@ -1,3 +1,13 @@
+# Main ETL for joining weather and taxi datasets
+# 1. Handles Spark session setup
+# 2. Create object dataProcess for each taxi data file
+# 3. Process data in sequential order
+# Author: Colin Chow
+# Date created: 09/30/2019
+# Version:
+
+import os
+
 from datetime import datetime
 from pyspark    import SparkConf, SparkContext
 from pyspark.sql import SparkSession
@@ -6,10 +16,17 @@ from dataProcessing import dataProcess # Custom, see dataProcessing.py
 
 def main():
     # One spark session to join them all
+    conf  = SparkConf()
+    conf.set('spark.executorEnv.PGHOST'    , os.environ['PGHOST'])
+    conf.set('spark.executorEnv.PGUSER'    , os.environ['PGUSER'])
+    conf.set('spark.executorEnv.PGPASSWORD', os.environ['PGPASSWORD'])
     spark = SparkSession.builder             \
                         .appName("timeJoin") \
+                        .config(conf=conf)   \
                         .getOrCreate()
-
+    
+    spark.sparkContext.addPyFile("postgres.py")
+    spark.sparkContext.addPyFile("globalVar.py")
     spark.sparkContext.addPyFile("datetimeTools.py")
     spark.sparkContext.addPyFile("appendWeatherData.py")
     spark.sparkContext.addPyFile("dataProcessing.py")
@@ -17,9 +34,9 @@ def main():
     # Years ond months of interest: n-years back from current year
     nOfYears = glb('nOfPassYears')
     currYear = datetime.now().year
-    yearList = [str(cnt + currYear - nOfYears + 1) for cnt in range(nOfYears)]
+    #yearList = [str(cnt + currYear - nOfYears + 1) for cnt in range(nOfYears)]
     months   = [str(val + 1).zfill(2) for val in range(12)]
-    #yearList = ['2012','2013','2014']
+    yearList = ['2018','2019']
     #months   = ['01']
 
     # Create an object for every taxi data file

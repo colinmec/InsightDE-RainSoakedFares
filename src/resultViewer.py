@@ -9,6 +9,7 @@
 import os
 import psycopg2 as pg
 import pandas   as pd
+import numpy    as np
 import pandas.io.sql as psql
 
 import dash
@@ -55,7 +56,7 @@ def isRaining(val):
     else:
         return [0, 0, 1]
 
-def getBarChartData(year, month, station):
+def getBarChartData(metric, year, month, station):
     # Generate report for plots
     # Load data from postgreSQL
     conn = pg.connect(dbname   = "taxi_and_weather_5pc"  , \
@@ -79,25 +80,77 @@ def getBarChartData(year, month, station):
     df = df[(df['year']    == year)]
     df = df[(df['month']   == month)]
     
-    # Aggregate total fare amount by hour and by day
-    fare_hr = df.groupby(['day','wkday','hour','precip'],as_index=False).agg({'fare':'sum'})
-    fare_dy = fare_hr.groupby(['day','wkday'],as_index=False).agg({'fare':'sum','precip':'sum'})
+    if metric == 0:
+        yAxis  = getDailyFare(df)
+        title  = 'Daily fare revenue for {} {} within {}' \
+                 .format(nameOfMonth(month), year, stationName(station))
+        yLabel = 'Amount ($)'
+    elif metric == 1:
+        yAxis  = getDailyTip(df)
+        title  = 'Daily total tip for {} {} within {}' \
+                 .format(nameOfMonth(month), year, stationName(station))
+        yLabel = 'Amount ($)'
+    elif metric == 2:
+        yAxis  = getDailyPaid(df)
+        title  = 'Daily total amount for {} {} within {}' \
+                 .format(nameOfMonth(month), year, stationName(station))
+        yLabel = 'Amount ($)'
+    elif metric == 3:
+        yAxis  = getAvgSpeed(df)
+        title  = 'Average vehicle speed for {} {} within {}' \
+                 .format(nameOfMonth(month), year, stationName(station))
+        yLabel = 'MPH'
+    elif metric == 4:
+        yAxis  = getAvgFPM(df)
+        title  = 'Average fare per mile for {} {} within {}' \
+                 .format(nameOfMonth(month), year, stationName(station))
+        yLabel = 'Dollar per mile'
+        
+    # Aggregate total precip amount by hour and by day
+    sum_hr = df[['day','wkday','hour','precip']].drop_duplicates()
+    sum_dy = sum_hr.groupby(['day','wkday'],as_index=False).agg({'precip':'sum'})
     
     # Setup x- and y-axes
     # Break-up y-axes according to precipitation conditions
-    xAxis   = [str(val[0]) + '<br>' + val[1] for val in zip(fare_dy['day'], fare_dy['wkday'])]
-    yRain   = [20*fare_dy['fare'][ind]*isRaining(val)[0] for ind, val in enumerate(fare_dy['precip'])]
-    yWet    = [20*fare_dy['fare'][ind]*isRaining(val)[1] for ind, val in enumerate(fare_dy['precip'])]
-    yDry    = [20*fare_dy['fare'][ind]*isRaining(val)[2] for ind, val in enumerate(fare_dy['precip'])]
+    xAxis = [str(val[0]) + '<br>' + val[1] for val in zip(sum_dy['day'], sum_dy['wkday'])]
+    yRain = [yAxis[ind]*isRaining(val)[0] for ind, val in enumerate(sum_dy['precip'])]
+    yDriz = [yAxis[ind]*isRaining(val)[1] for ind, val in enumerate(sum_dy['precip'])]
+    yDry  = [yAxis[ind]*isRaining(val)[2] for ind, val in enumerate(sum_dy['precip'])]
     
     # barData contains arrays to be used in plots
-    barData = [{'year':year, 'month':month, 'station':station}]
+    barData = [{'year':year, 'month':month, 'station':station, 'title':title, 'yLabel':yLabel}]
+    barData.append({'x':xAxis,'y':sum_dy['precip'],'type':'bar','name':'Prcp.','marker':{'color':'#0000CD'}})
     barData.append({'x':xAxis,'y':yRain,'type':'bar','name':'RAIN','marker':{'color':'#87CEFA'}})
-    barData.append({'x':xAxis,'y':yWet, 'type':'bar','name':'DRIZ','marker':{'color':'#7FFFD4'}})
+    barData.append({'x':xAxis,'y':yDriz,'type':'bar','name':'DRIZ','marker':{'color':'#7FFFD4'}})
     barData.append({'x':xAxis,'y':yDry, 'type':'bar','name':'DRY','marker':{'color':'#F0E68C'}})
-    barData.append({'x':xAxis,'y':fare_dy['precip'],'type':'bar','name':'Prcp.','marker':{'color':'#0000CD'}})
-    
+        
     return barData
+
+def getDailyFare(df):
+    sum_dy = df.groupby(['day','wkday'],as_index=False).agg({'fare':'sum'})
+    return 20*sum_dy['fare']
+
+def getDailyTip(df):
+    sum_dy = df.groupby(['day','wkday'],as_index=False).agg({'tip':'sum'})
+    return 20*sum_dy['tip']
+
+def getDailyPaid(df):
+    sum_dy = df.groupby(['day','wkday'],as_index=False).agg({'totalPaid':'sum'})
+    return 20*sum_dy['totalPaid']
+
+def getAvgSpeed(df):
+    dfDist = df[(df['distance'] > 0.0)]
+    dfDist['duration'] = dfDist['dOTimeStamp'] - dfDist['pUTimeStamp']
+    dfDist = dfDist[(dfDist['duration'] > 0)]
+    dfDist['speed'] = 3600*dfDist['distance']/dfDist['duration']
+    dfMean = dfDist.groupby(['day','wkday'],as_index=False).agg({'speed':np.mean})
+    return dfMean['speed']
+
+def getAvgFPM(df):
+    dfDist = df[(df['distance'] > 0.0)]
+    dfDist['FPM'] = dfDist['fare']/dfDist['distance']
+    dfMean = dfDist.groupby(['day','wkday'],as_index=False).agg({'FPM':np.mean})
+    return dfMean['FPM']
 
 #setting up dash
 external_stylesheets = ['https://codepen.io/anon/pen/mardKv.css']
@@ -119,7 +172,27 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
     
     html.Div([
         html.Div(children='',
-            style=dict(width='38%', display='table-cell'),
+            style=dict(width='20%', display='table-cell'),
+            ),
+        
+        html.Div([
+            dcc.Dropdown(
+                id='metric',
+                options=[
+                    {'label': 'Fare',              'value': 0},
+                    {'label': 'Tip',               'value': 1},
+                    {'label': 'Total paid',        'value': 2},
+                    {'label': 'Avg mile per hour', 'value': 3},
+                    {'label': 'Avg fare per mile', 'value': 4}
+                    ],
+                value=0,
+                ),
+            ],
+            style=dict(width='15%', display='table-cell'),
+            ),
+        
+        html.Div(children='',
+            style=dict(width='3%', display='table-cell'),
             ),
         
         html.Div([
@@ -139,7 +212,7 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
                     {'label': nameOfMonth('11'), 'value': '11'},
                     {'label': nameOfMonth('12'), 'value': '12'}
                     ],
-                value='01',
+                value='03',
                 ),
             ],
             style=dict(width='12%', display='table-cell'),
@@ -161,7 +234,7 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
                     {'label': '2010', 'value': '2010'},
                     {'label': '2009', 'value': '2009'}
                 ],
-                value='2019',
+                value='2018',
                 ),
             ],
             style=dict(width='12%', display='table-cell'),
@@ -209,11 +282,12 @@ app.layout = html.Div(style={'backgroundColor': '#FFFFFF'}, children=[
 
 @app.callback(
     Output('result' , 'children'),
-    [Input('month'  , 'value'),
+    [Input('metric' , 'value'),
+     Input('month'  , 'value'),
      Input('year'   , 'value'),
      Input('station', 'value')])
-def processData(month, year, station):
-    barData = getBarChartData(year, month, station)
+def processData(metric, month, year, station):
+    barData = getBarChartData(metric, year, month, station)
     return barData
 
 @app.callback(
@@ -221,14 +295,11 @@ def processData(month, year, station):
     [Input('result', 'children')])
 def update_figure(barData):
     return {
-        'data': [barData[1], barData[2], barData[3]],
+        'data': [barData[2], barData[3], barData[4]],
         'layout': {
-            'title':'Daily fare revenue for {} {} within {}'  \
-                    .format(nameOfMonth(barData[0]['month']), \
-                            barData[0]['year'],               \
-                            stationName(barData[0]['station'])),
+            'title':barData[0]['title'],
             'xaxis':{'title':'Day of month'},
-            'yaxis':{'title':'Amount ($)'  },
+            'yaxis':{'title':barData[0]['yLabel']},
             'barmode'      :'stack',
             'showlegend'   :True,
             'plot_bgcolor' :'#FFFFFF',
@@ -242,7 +313,7 @@ def update_figure(barData):
     [Input('result', 'children')])
 def update_figure(barData):
     return {
-        'data': [barData[4]],
+        'data': [barData[1]],
         'layout': {
             'title':'Precipitation in mm for {} {}'  \
                     .format(nameOfMonth(barData[0]['month']), \

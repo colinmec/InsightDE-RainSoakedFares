@@ -13,7 +13,7 @@ nOfPassYears = 11
 pgHost      = os.environ['PGHOST']     # Host of postgres database
 pgUser      = os.environ['PGUSER']     # My postgres username
 pgPasswd    = os.environ['PGPASSWORD'] # My postgres password
-dbName      = 'taxi_and_weather_5pc'   # Name of postgres database (default: postgres)
+dbName      = 'taxi_and_weather'       # Name of postgres database (default: postgres)
 pgWriteMode = 'append'
 pgKeepCols1 = ['VendorID'   , 'pUTimeStamp', 'pULocId',    \
                'dOTimeStamp', 'distance'   , 'dOLocId',    \
@@ -31,9 +31,8 @@ s3Prefix    = 's3a://'
 s3ReadMode  = 'PERMISSIVE'
 
 # NYC-TLC taxi data variables
-#s3TaxiBucket    = 'colinmec-test'
-#s3TaxiBucket    = 'nyc-tlc'
-s3TaxiBucket    = 'colinmec-nyc-tlc-5pc'
+s3TaxiBucket    = 'nyc-tlc'
+#s3TaxiBucket    = 'colinmec-nyc-tlc-5pc'
 ylwTaxiPrefix   = 'trip data/yellow_tripdata_'
 
 # NOAA IDS data variables

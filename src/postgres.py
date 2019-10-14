@@ -24,13 +24,31 @@ class PostgresConnector(object):
     def get_writer(self, df):
         return DataFrameWriter(df)
 
-    def write(self, df, table, mode):
+    def write(self, df, table, mode, **kwargs):
         my_writer = self.get_writer(df)
-        my_writer.jdbc(self.url_connect, table, mode, self.properties)
-        
+        if 'db' in kwargs:
+            url = "jdbc:postgresql://" + self.hostname + \
+                  ":5432/" + kwargs.get('db')
+        else:
+            url = self.url_connect
+        my_writer.jdbc(url, table, mode, self.properties)
+
     def get_reader(self, spark):
         return DataFrameReader(spark)
-    
-    def read(self, spark, table):
+
+    def read(self, spark, table, **kwargs):
         my_reader = self.get_reader(spark)
-        return my_reader.jdbc(self.url_connect, table, self.properties)
+        if 'db' in kwargs:
+            url = "jdbc:postgresql://" + self.hostname + \
+                  ":5432/" + kwargs.get('db')
+        else:
+            url = self.url_connect
+        
+        if 'numPartitions' in kwargs:
+            return my_reader.jdbc(url, table, numPartitions=kwargs.get('numPartitions'), \
+                                                     column=kwargs.get('column'),        \
+                                                 lowerBound=kwargs.get('lowerBound'),    \
+                                                 upperBound=kwargs.get('upperBound'),    \
+                                                 properties=self.properties)
+        else:
+            return my_reader.jdbc(url, table, properties=self.properties)
