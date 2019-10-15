@@ -27,6 +27,7 @@ def main():
     
     spark.sparkContext.addPyFile("postgres.py")
     spark.sparkContext.addPyFile("globalVar.py")
+    spark.sparkContext.addPyFile("getTaxiFields.py")
     spark.sparkContext.addPyFile("datetimeTools.py")
     spark.sparkContext.addPyFile("appendWeatherData.py")
     spark.sparkContext.addPyFile("dataProcessing.py")
@@ -34,10 +35,8 @@ def main():
     # Years ond months of interest: n-years back from current year
     nOfYears = glb('nOfPassYears')
     currYear = datetime.now().year
-    #yearList = [str(cnt + currYear - nOfYears + 1) for cnt in range(nOfYears)]
+    yearList = [str(cnt + currYear - nOfYears + 1) for cnt in range(nOfYears)]
     months   = [str(val + 1).zfill(2) for val in range(12)]
-    yearList = ['2018','2019']
-    #months   = ['01']
 
     # Create an object for every taxi data file
     # Make sure to remove object if file does not exist

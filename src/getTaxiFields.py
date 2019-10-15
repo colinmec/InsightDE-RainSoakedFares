@@ -55,27 +55,6 @@ synDict = { \
     'congestion_surcharge'  : 'congSurcharge'
 }
 
-# Data from 07-2016 to 12-2016 is messed up
-badSchema1 = { \
-    'VendorID'              : 'pUDateTime',
-    'tpep_pickup_datetime'  : 'nPax',
-    'tpep_dropoff_datetime' : 'distance',
-    'passenger_count'       : 'rateCode',
-    'trip_distance'         : 'storeNFwdFlag',
-    'RatecodeID'            : 'pULocId',
-    'store_and_fwd_flag'    : 'dOLocId',
-    'PULocationID'          : 'VendorID',
-    'DOLocationID'          : 'fare',
-    'payment_type'          : 'payType',
-    'fare_amount'           : 'mtaTax',
-    'extra'                 : 'tip',
-    'mta_tax'               : 'tolls',
-    'tip_amount'            : 'surcharge',
-    'tolls_amount'          : 'totalPaid',
-    'improvement_surcharge' : 'dODateTime',
-    'total_amount'          : 'extra',
-    }
-
 mapNameToType = { \
     'VendorID'      : 'STRING',
     'pUDateTime'    : 'STRING',
@@ -98,15 +77,18 @@ mapNameToType = { \
     'tip'           : 'FLOAT',
     'tolls'         : 'FLOAT',
     'totalPaid'     : 'FLOAT',
-    'congSurcharge' : 'FLOAT'
+    'congSurcharge' : 'FLOAT',
+    'unknown'       : 'STRING'
     }
 
 def getColNamesAndTypes(bucketName, keyName, badSchemaFlag):
     df     = S3.preview_csv_dataset(bucket=bucketName, key=keyName, rows=5)
-    if badSchemaFlag == '0':
-        cols   = [synDict.get(re.sub(' ', '', clm)) for clm in df.columns]
-    elif badSchemaFlag == '1':
-        cols   = [badSchema1.get(re.sub(' ', '', clm)) for clm in df.columns]
+    cols   = [synDict.get(re.sub(' ', '', clm)) for clm in df.columns]
+    # Data from 07-2016 to 12-2016 is messed up
+    if badSchemaFlag == '1':
+        cols = filter(None, cols)
+        cols.append('congSurcharge')
+        cols.append('unknown')
     dTypes = [mapNameToType.get(clm) for clm in cols]
     
     return cols, dTypes

@@ -25,7 +25,6 @@ class batchProcess:
         # There must be a better way than this
         pg = postgres.PostgresConnector()
         qr = "(SELECT 1 FROM pg_tables WHERE tablename='" + self.tableName + "') AS wtf"
-        #df = pg.get_reader(sqlc).jdbc(pg.url_connect, table=qr, properties=pg.properties)
         df = pg.read(sqlc, table=qr)
         return df.count() == 1
 
@@ -99,6 +98,7 @@ class batchProcess:
                                  'precip'     :'mean' , \
                                  'pUAirTemp'  :'mean' , \
                                  'pUCloudCov' :'mean'})
+
         self.hr = self.hr.withColumnRenamed("count(pUTimeStamp)", "n_trips")   \
                          .withColumnRenamed("sum(fare)"         , "sum_fare")  \
                          .withColumnRenamed("sum(tip)"          , "sum_tip")   \
@@ -110,6 +110,7 @@ class batchProcess:
                          .withColumnRenamed("avg(precip)"       , "precip")    \
                          .withColumnRenamed("avg(pUAirTemp)"    , "air_temp")  \
                          .withColumnRenamed("avg(pUCloudCov)"   , "cloud_cvr")
+
         self.hr = self.hr.withColumn("sum_fare" , SF.round(self.hr["sum_fare"] , 2))
         self.hr = self.hr.withColumn("sum_tip"  , SF.round(self.hr["sum_tip"]  , 2))
         self.hr = self.hr.withColumn("sum_paid" , SF.round(self.hr["sum_paid"] , 2))
@@ -137,6 +138,3 @@ def appendTimeStr(ts):
             int(dt.fromtimestamp(ts).day),            \
             int(dt.fromtimestamp(ts).hour),           \
             dayLabel(dt.fromtimestamp(ts).weekday())]
-
-
-

@@ -18,9 +18,13 @@ def main():
 
     # Generate key names according to nyc-tlc naming format
     keys = []
+    badSchema = []
     for yr in years:
         for mn in months:
-            keys.append(partialPath + str(yr) + '-' + str(mn).zfill(2) + '.csv')
+            filepath = partialPath + str(yr) + '-' + str(mn).zfill(2) + '.csv'
+            keys.append(filepath)
+            if yr == 2016 and mn in [7,8,9,10,11,12]:
+                badSchema.append(filepath)            
 
     # Load, sample, save, copy and clean-up
     for keyname in keys:
@@ -34,9 +38,19 @@ def main():
                     hFlag = True
                 else:
                     hFlag = False
-                df = S3.preview_csv_dataset(bucket=sourceBucket, key=keyname, rows=nrows, skip=cnt*nrows)
-                df_short = df.sample(frac=1.0/dnScale, random_state=1)
-                df_short.to_csv('tmp.csv',header=hFlag, index=False,mode='a')
+                if keyname in badSchema:
+                    df = S3.preview_csv_dataset(bucket=sourceBucket, key=keyname, rows=nrows, skip=cnt*nrows+1)
+                    df_short = df.sample(frac=1.0/dnScale, random_state=1)
+                    if hFlag == True:
+                        hFlag = ['VendorID','tpep_pickup_datetime','tpep_dropoff_datetime','passenger_count',    \
+                                 'trip_distance','RatecodeID','store_and_fwd_flag','PULocationID','DOLocationID',\
+                                 'payment_type','fare_amount','extra','mta_tax','tip_amount','tolls_amount',     \
+                                 'improvement_surcharge','total_amount','','']
+                    df_short.to_csv('tmp.csv',header=hFlag,index=False,mode='a')
+                else:
+                    df = S3.preview_csv_dataset(bucket=sourceBucket, key=keyname, rows=nrows, skip=cnt*nrows)
+                    df_short = df.sample(frac=1.0/dnScale, random_state=1)
+                    df_short.to_csv('tmp.csv',header=hFlag,index=False,mode='a')
                 cnt = cnt + 1
                 if  df.shape[0] < nrows:
                     break
