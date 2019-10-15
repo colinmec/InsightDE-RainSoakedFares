@@ -40,8 +40,9 @@ The main work load of Spark is to clean up taxi data and incorporate weather inf
 
 ## Front-end features
 1. Selection of charts by month  
-2. Daily aggregated metric along with precipitation  
-3. Metric selection: fare  
+2. Daily aggregated metrics
+3. Duplicated panel for data comparison
+3. Metric selections: fare, tip, total paid, vehicle speed, fare per mile, fare per travel hour, num. of trips, num. of passengers, precipitation, air temperature  
 
 ## Codes and instructions
 Source code directory: src  
